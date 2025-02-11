@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
+import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import "./BookingSummary.css";
 
 const BookingSummary = () => {
@@ -20,7 +21,7 @@ const BookingSummary = () => {
     firstName: "",
     lastName: "",
     email: "",
-    confirmEmail: ""
+    confirmEmail: "",
   });
 
   const handleDateChange = (id, type, value) => {
@@ -31,12 +32,14 @@ const BookingSummary = () => {
     );
   };
 
-  const calculateTotal = (startDate, endDate, pricePerDay) => {
-    if (!startDate || !endDate) return "₦0";
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-    return `₦${days * pricePerDay}`;
+  const calculateTotal = () => {
+    return bookings.reduce((total, booking) => {
+      if (!booking.startDate || !booking.endDate) return total;
+      const start = new Date(booking.startDate);
+      const end = new Date(booking.endDate);
+      const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      return total + days * booking.pricePerDay;
+    }, 0);
   };
 
   const handleDelete = (id) => {
@@ -47,19 +50,42 @@ const BookingSummary = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleNext = async () => {
-    const dataToSend = { bookings, userDetails: formData };
-    try {
-      await fetch("YOUR_GOOGLE_SHEET_API_ENDPOINT", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSend),
-      });
-      navigate("/payment", { state: dataToSend });
-    } catch (error) {
-      console.error("Error sending data to spreadsheet:", error);
-    }
+  const paymentConfig = {
+    public_key: "FLWPUBK_TEST-d5ec3725cfa39a87b219099edd63ceb9-X",
+    tx_ref: Date.now().toString(),
+    amount: calculateTotal(),
+    currency: "NGN",
+    payment_options: "card, mobilemoney, ussd",
+    customer: {
+      email: formData.email,
+      phone_number: "", // Add a phone number if available
+      name: `${formData.firstName} ${formData.lastName}`,
+    },
+    customizations: {
+      title: "Office Space Booking",
+      description: "Payment for selected office spaces",
+      logo: "https://kelechieze.wordpress.com/wp-content/uploads/2024/11/images.jpg", // Replace with your actual logo URL
+    },
+    callback: (response) => {
+        console.log("Payment response:", response);
+        if (response.status === "successful") {
+          // Delay navigation to payment-success by 5 seconds
+          setTimeout(() => {
+            navigate("/", { state: response });
+      
+            // Then redirect to main page after another 5 seconds
+            setTimeout(() => {
+              navigate("/");
+            }, 5000);
+      
+          }, 5000);
+        }
+        closePaymentModal();
+      },
+      
+    onClose: () => console.log("Payment modal closed"),
   };
+  
 
   return (
     <div className="booking-summary">
@@ -81,12 +107,20 @@ const BookingSummary = () => {
                 {booking.name}
               </td>
               <td>
-                <input type="date" value={booking.startDate} onChange={(e) => handleDateChange(booking.id, "startDate", e.target.value)} />
+                <input
+                  type="date"
+                  value={booking.startDate}
+                  onChange={(e) => handleDateChange(booking.id, "startDate", e.target.value)}
+                />
               </td>
               <td>
-                <input type="date" value={booking.endDate} onChange={(e) => handleDateChange(booking.id, "endDate", e.target.value)} />
+                <input
+                  type="date"
+                  value={booking.endDate}
+                  onChange={(e) => handleDateChange(booking.id, "endDate", e.target.value)}
+                />
               </td>
-              <td>{calculateTotal(booking.startDate, booking.endDate, booking.pricePerDay)}</td>
+              <td>₦{calculateTotal()}</td>
               <td>
                 <button className="delete-btn" onClick={() => handleDelete(booking.id)}>
                   <FaTrash />
@@ -123,9 +157,11 @@ const BookingSummary = () => {
         </div>
       </div>
 
-      {/* Next Button */}
+      {/* Pay Now Button */}
       <div className="next-button-container">
-        <button className="next-button" onClick={handleNext}>Next</button>
+        <FlutterWaveButton {...paymentConfig} className="next-button">
+          Pay Now
+        </FlutterWaveButton>
       </div>
     </div>
   );

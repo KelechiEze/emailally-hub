@@ -130,6 +130,7 @@ button:hover {
     border-radius: 5px;
     font-size: 14px;
     background: white;
+    color: black;  /* Ensure text inside input is black */
     outline: none;
     transition: border 0.3s;
 }
@@ -137,6 +138,7 @@ button:hover {
 .form-group input:focus {
     border-color: #007bff;
 }
+
 
 /* Centered Next Button */
 .next-button-container {
