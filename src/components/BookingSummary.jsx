@@ -58,34 +58,23 @@ const BookingSummary = () => {
     payment_options: "card, mobilemoney, ussd",
     customer: {
       email: formData.email,
-      phone_number: "", // Add a phone number if available
+      phone_number: "",
       name: `${formData.firstName} ${formData.lastName}`,
     },
     customizations: {
       title: "Office Space Booking",
       description: "Payment for selected office spaces",
-      logo: "https://kelechieze.wordpress.com/wp-content/uploads/2024/11/images.jpg", // Replace with your actual logo URL
+      logo: "https://kelechieze.wordpress.com/wp-content/uploads/2024/11/images.jpg",
     },
     callback: (response) => {
-        console.log("Payment response:", response);
-        if (response.status === "successful") {
-          // Delay navigation to payment-success by 5 seconds
-          setTimeout(() => {
-            navigate("/", { state: response });
-      
-            // Then redirect to main page after another 5 seconds
-            setTimeout(() => {
-              navigate("/");
-            }, 5000);
-      
-          }, 5000);
-        }
-        closePaymentModal();
-      },
-      
+      console.log("Payment response:", response);
+      if (response.status === "successful") {
+        navigate("/booking-summary", { state: response });
+      }
+      closePaymentModal();
+    },
     onClose: () => console.log("Payment modal closed"),
   };
-  
 
   return (
     <div className="booking-summary">
