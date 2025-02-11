@@ -58,6 +58,11 @@ const BookingGrid = () => {
 
   return (
     <div className="booking-container">
+      {/* Added H2 Heading */}
+      <h2 className="booking-heading">
+        BOOK <span className="purple-text">YOUR</span> SPACE
+      </h2>
+
       <div className="booking-grid">
         {officeSpaces.map((space) => (
           <div key={space.id} className="booking-card">
