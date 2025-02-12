@@ -9,6 +9,8 @@ const BookingSummary = () => {
   const navigate = useNavigate();
   const selectedBooking = Array.isArray(location.state) ? location.state : [location.state];
 
+  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+
   const [bookings, setBookings] = useState(
     selectedBooking.map((booking) => ({
       ...booking,
@@ -99,6 +101,7 @@ const BookingSummary = () => {
                 <input
                   type="date"
                   value={booking.startDate}
+                  min={today} // Restrict past dates
                   onChange={(e) => handleDateChange(booking.id, "startDate", e.target.value)}
                 />
               </td>
@@ -106,7 +109,9 @@ const BookingSummary = () => {
                 <input
                   type="date"
                   value={booking.endDate}
+                  min={booking.startDate || today} // End date cannot be before start date
                   onChange={(e) => handleDateChange(booking.id, "endDate", e.target.value)}
+                  disabled={!booking.startDate} // Prevent selecting end date before start date
                 />
               </td>
               <td>₦{calculateTotal()}</td>

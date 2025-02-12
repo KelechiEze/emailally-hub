@@ -124,8 +124,9 @@ button:hover {
 
 /* Input Fields */
 .form-group input {
-    width: 100%;
+    width: 85%;
     padding: 10px;
+    margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 14px;
